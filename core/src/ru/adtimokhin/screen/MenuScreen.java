@@ -4,201 +4,124 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
-import java.util.logging.Level;
-
+import ru.adtimokhin.base.ActionListener;
 import ru.adtimokhin.base.Base2DScreen;
+import ru.adtimokhin.maths.Rect;
+import ru.adtimokhin.screen.menuscreen.ButtomNewGame;
+import ru.adtimokhin.screen.menuscreen.ButtonExit;
+import ru.adtimokhin.screen.sprites.Background;
+import ru.adtimokhin.screen.sprites.Star;
 
-public class MenuScreen extends Base2DScreen {
+/**
+ * Экран меню
+ */
+
+public class MenuScreen extends Base2DScreen implements ActionListener {
+
+    private static final int STAR_COUNT = 256;
+
+    private static final float BUTTON_PRESS_SCALE = 0.9f;
+    private static final float BUTTON_HEIGHT = 0.15f;
+
+    private Background background;
+    private Texture bgTexture;
+    private TextureAtlas atlas;
+    private Star star[];
+    private ButtonExit buttonExit;
+    private ButtomNewGame buttomNewGame;
+
+
+
     public MenuScreen(Game game) {
         super(game);
     }
 
-    SpriteBatch batch;
-    Texture img;
-    Texture background;
-    float x;
-    float y;
-    static int conter;
-    int prevDirection = -1;
-    float dist;
-    //Flags
-    static boolean VectorIsCalculated = false;
-    static boolean velocityIsSet = false;
-    //Vectors
-    static Vector2 pos;
-    static Vector2 velocity;
-    Vector2 speedIncrement;
-    static Vector2 destination;
-    static Vector2 vector;
-    // CONSTANTS
-    private static final int UP = 0;
-    private static final int DOWN = 1;
-    private static final int RIGHT = 2;
-    private static final int LEFT = 3;
-
     @Override
     public void show() {
         super.show();
-        batch = new SpriteBatch();
-        img = new Texture("badlogic.jpg");
-        background = new Texture("spaceBG.jpg");// мой BG
-        //Vectors
-        pos = new Vector2(0, 0);
-        velocity = new Vector2(0, 0);
-        speedIncrement = new Vector2(1.5f, 1.5f);
-        vector = new Vector2(0, 0);
+        bgTexture = new Texture("textures/bg.png");
+        background = new Background(new TextureRegion(bgTexture));
+        atlas = new TextureAtlas("textures/menuAtlas.tpack");
+        star = new Star[STAR_COUNT];
+        for (int i = 0; i < star.length; i++) {
+            star[i] = new Star(atlas);
+        }
+        buttonExit = new ButtonExit(atlas, this, BUTTON_PRESS_SCALE);
+        buttonExit.setHeightProportion(BUTTON_HEIGHT);
+
+        buttomNewGame = new ButtomNewGame(atlas, this, BUTTON_PRESS_SCALE);
+        buttomNewGame.setHeightProportion(BUTTON_HEIGHT);
     }
 
     @Override
     public void render(float delta) {
+        super.render(delta);
+        update(delta);
+        draw();
+    }
+
+    public void draw() {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
         batch.begin();
-        batch.draw(background, 0, 0);
-        batch.draw(img, pos.x, pos.y);
+        background.draw(batch);
+        for (int i = 0; i < star.length; i++) {
+            star[i].draw(batch);
+        }
+        buttonExit.draw(batch);
+        buttomNewGame.draw(batch);
         batch.end();
+    }
 
-        if (VectorIsCalculated)
-            mouseMove();
-
-        if (velocity.x != 0 || velocity.y != 0)
-            pos.add(velocity.x, velocity.y);
-
+    public void update(float delta) {
+        for (int i = 0; i < star.length; i++) {
+            star[i].update(delta);
+        }
     }
 
     @Override
     public void dispose() {
         super.dispose();
-        batch.dispose();
-        img.dispose();
-        background.dispose();
+        bgTexture.dispose();
+        atlas.dispose();
     }
 
     @Override
-    public boolean keyTyped(char character) {
-        if('w'==character)
-            buttonMove(UP);
-        else if('s'==character)
-            buttonMove(DOWN);
-        else if('d'==character)
-            buttonMove(RIGHT);
-        else if('a'== character)
-            buttonMove(LEFT);
-        return super.keyTyped(character);
-    }
-
-    @Override
-    public boolean keyDown(int keycode) {
-        if(19 == keycode)
-            keyTyped('w');
-//            buttonMove(UP);
-        else if(21 == keycode)
-            keyTyped('a');
-  //          buttonMove(LEFT);
-        else if (20 == keycode)
-            keyTyped('s');
-    //        buttonMove(DOWN);
-        else if(22 == keycode)
-            keyTyped('d');
-      //      buttonMove(RIGHT);
-        return super.keyDown(keycode);
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        speedIncrement.set(1.5f, 1.5f);
-        prevDirection =-1;
-        velocity.x = 0;
-        velocity.y = 0;
-        return super.keyUp(keycode);
-    }
-
-    private void buttonMove(int direction) {
-        if (VectorIsCalculated) {
-            VectorIsCalculated = false;
-            velocity.set(0, 0);
+    public void resize(Rect worldBounds) {
+        super.resize(worldBounds);
+        background.resize(worldBounds);
+        for (int i = 0; i < star.length; i++) {
+            star[i].resize(worldBounds);
         }
-          if (direction ==UP){
-            velocity.set(0,5*speedIncrement.y);
-            speedIncrement.add(0.5f,0.5f);
-          }else if (direction == DOWN){
-              velocity.set(0,-5*speedIncrement.y);
-              speedIncrement.add(0.5f,0.5f);
-        }else if (direction == RIGHT){
-              velocity.set(5*speedIncrement.x,0);
-              speedIncrement.add(0.5f,0.5f);
-          }else if(direction == LEFT){
-              velocity.set(-5*speedIncrement.x,0);
-              speedIncrement.add(0.5f,0.5f);
+        buttonExit.resize(worldBounds);
+        buttomNewGame.resize(worldBounds);
+    }
+
+    @Override
+    public boolean touchDown(Vector2 touch, int pointer) {
+        buttonExit.touchDown(touch, pointer);
+        buttomNewGame.touchDown(touch, pointer);
+        return super.touchDown(touch, pointer);
+    }
+
+    @Override
+    public boolean touchUp(Vector2 touch, int pointer) {
+        buttonExit.touchUp(touch, pointer);
+        buttomNewGame.touchUp(touch, pointer);
+        return super.touchUp(touch, pointer);
+    }
+
+    @Override
+    public void actionPerformed(Object src) {
+        if (src == buttonExit) {
+            Gdx.app.exit();
+        } else if (src == buttomNewGame) {
+            game.setScreen(new GameScreen(game));
         }
     }
-
-    private static void mouseMove() {
-        if (!velocityIsSet) {
-            if (vector.x != 0)
-                velocity.x = vector.x / 30;
-            else velocity.x = 0;
-            if (vector.y != 0)
-                velocity.y = vector.y / 30;
-            else velocity.y = 0;
-            velocityIsSet = true;
-        }
-        conter++;
-        if (conter == 30 || destination.x == pos.x && destination.y == pos.y) {
-            VectorIsCalculated = false;
-            conter = 0;
-            velocity.x = 0;
-            velocity.y = 0;
-            velocityIsSet = false;
-        }
-        /*pos.add(velocity.x, velocity.y);
-        velocity.x =0;
-        velocity.y =0;*/
-    }
-
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        int normalY = Gdx.graphics.getHeight() - screenY;
-        destination = new Vector2(screenX, normalY);
-        vector = new Vector2(destination.x - pos.x, destination.y - pos.y);
-        VectorIsCalculated = true;
-
-        System.out.println(dist);
-        return super.touchDown(screenX, normalY, pointer, button);
-    }
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        int normalHeight = Gdx.graphics.getHeight() - screenY;
-        return super.touchUp(screenX, normalHeight, pointer, button);
-    }
-
 }
-//KeyDown :29
-//KeyTyped :a
-//KeyUp:29
-//KeyDown :47
-//KeyTyped :s
-//KeyUp:47
-//KeyDown :51
-//KeyTyped :w
-//KeyUp:51
-//KeyDown :32
-//KeyTyped :d
-//KeyUp:32
-
-// KeyTyped :
-//KeyUp:19
-//KeyDown :21
-//KeyTyped :
-//KeyUp:21
-//KeyDown :20
-//KeyTyped :
-//KeyUp:20
-//KeyDown :22
-//KeyTyped :
-//KeyUp:22
