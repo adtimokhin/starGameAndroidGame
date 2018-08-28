@@ -12,13 +12,17 @@ import com.badlogic.gdx.math.Vector2;
 import ru.adtimokhin.maths.MatrixUtils;
 import ru.adtimokhin.maths.Rect;
 
+/**
+ * Базовый класс для всех экранов
+ */
+
 public class Base2DScreen implements Screen, InputProcessor {
 
     protected SpriteBatch batch;
 
     protected Game game;
     private Rect screenBounds; // границы области рисования в пикселях
-    private Rect worldBounds; // границы проекции мировых координат
+    protected Rect worldBounds; // границы проекции мировых координат
     private Rect glBounds; // дефолтные границы проекции мир - gl
 
     private Matrix4 worldToGl;
@@ -65,7 +69,6 @@ public class Base2DScreen implements Screen, InputProcessor {
         MatrixUtils.calcTransitionMatrix(screenToWorld, screenBounds, worldBounds);
         resize(worldBounds);
     }
-
 
     public void resize(Rect worldBounds) {
 

@@ -1,7 +1,5 @@
 package ru.adtimokhin.screen.gamescreen;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 
@@ -18,8 +16,6 @@ public class Bullet extends Sprite {
     private int damage;
 
     private Object owner;
-
-    private Sound lazerShot = Gdx.audio.newSound(Gdx.files.internal("sounds/LazerSound.mp3"));
 
     public Bullet() {
         regions = new TextureRegion[1];
@@ -41,7 +37,6 @@ public class Bullet extends Sprite {
         setHeightProportion(height);
         this.worldBounds = worldBounds;
         this.damage = damage;
-        lazerShot.play();
     }
 
     @Override
@@ -49,7 +44,6 @@ public class Bullet extends Sprite {
         this.pos.mulAdd(v, delta);
         if (isOutside(worldBounds)) {
             destroy();
-            lazerShot.stop();
         }
     }
 
@@ -68,5 +62,4 @@ public class Bullet extends Sprite {
     public void setOwner(Object owner) {
         this.owner = owner;
     }
-
 }

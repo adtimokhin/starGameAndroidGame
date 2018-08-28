@@ -83,7 +83,6 @@ public class Sprite extends Rect {
 
     public void destroy() {
         this.isDestroyed = true;
-
     }
 
     public void flushDestroy() {
@@ -94,4 +93,3 @@ public class Sprite extends Rect {
         return isDestroyed;
     }
 }
-
